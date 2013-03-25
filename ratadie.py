@@ -33,6 +33,10 @@ yr,mo,da=int(YYYY),int(MM),float(DD)
 or
 yr,mo,da,hr,mi,se=sh_parse_timestamp(TIMESTAMP)
 
+To get the day of the week 
+RD%7 -> 0-Sun,1-Mon,2-Tue,3-Wed,4-Thu,5-Fri,6-Sat
+(RD-1)%7+1 -> 1-Mon,2-Tue,3-Wed,4-Thu,5-Fri,6-Sat,7-Sun
+
 Vitalii Sheremet, SeaHorse Project, 2008-2013.
     """
 #
