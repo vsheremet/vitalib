@@ -1,0 +1,94 @@
+from datetime import datetime, timedelta
+def sh_datetime(TIMESTAMP):
+    """
+    Convert timestamp to python datetime: combines timestamp parsing, timedelta functionality 
+    and extends formaly restricted calendar values.
+    
+    t=sh_datetime(TIMESTAMP)
+    
+    Input:
+    TIMESTAMP string in various acceptable formats, fractional year, or python datetime.
+
+    Output: 
+    t - python datetime
+
+    Acceptable TIMESTAMP formats:
+    'YYYY-MM-DD HR:MN:SE'
+    'YYYY-MM-DDTHR:MN:SE'
+    'YYYY-MM-DDTHR:MN:SEZ'
+    'YYYY/MM/DD HR:MN:SE'
+    'YYYY/MM/DDTHR:MN:SE'    
+    'YYYY/MM/DDTHR:MN:SEZ'
+
+    If MM,DD,HR,MN,SE are omited, default values 01,01,00,00,00.
+    
+    DD,HR,MN,SE may be fractional and outside formal ranges, e.g., 
+
+    sh_datetime('2001-01-121.25 24.5:120.4:90.1234') -> 2001, yearday 121 00:00:00 + 0.25d + 24.5h + 120.4m +90.1234s
+    sh_datetime('2001-01 24.5') -> 2001-01-01 00:00:00 + 24.5h -> t=2001-01-02 00:30:00
+    
+    yr can be fractional, the fraction is based on Julian year length 365.25d
+    sh_datetime(2001.5) -> 2001-07-02 15:00:00
+
+    
+    Vitalii Sheremet, SeaHorse Project, 2008-2014
+    vsheremet@whoi.edu
+    """
+    if type(TIMESTAMP) == datetime:
+        t=TIMESTAMP
+        return t
+    elif type(TIMESTAMP) == str:    
+        YR='0001';MO='01';DA='01';HR='00';MN='00';SE='00';TIME='00:00:00'
+        TIMESTAMP=TIMESTAMP.strip()
+        TIMESTAMP=TIMESTAMP.rstrip('Z')
+        
+            
+        if TIMESTAMP.find(' ')>-1:
+            DATE,TIME=TIMESTAMP.split(' ')
+        elif TIMESTAMP.find('T')>-1:
+            DATE,TIME=TIMESTAMP.split('T')
+        else:
+            DATE=TIMESTAMP
+                
+        if DATE.find('/')>-1:    
+            CS='/'
+        else:
+            CS='-'
+            
+        DATE=DATE.split(CS)
+        if len(DATE)==3:
+            YR=DATE[0];MO=DATE[1];DA=DATE[2]
+        elif len(DATE)==2:
+            YR=DATE[0];MO=DATE[1]
+        elif len(DATE)==1:
+            YR=DATE[0]
+        else:
+            print('sh_datetime error: unknown date format')
+            return
+        
+        TIME=TIME.split(':')
+        if len(TIME)==3:
+            HR=TIME[0];MN=TIME[1];SE=TIME[2]
+        elif len(TIME)==2:
+            HR=TIME[0];MN=TIME[1]
+        elif len(TIME)==1:
+            HR=TIME[0]
+        else:
+            print('sh_datetime error: unknown time format')
+            return
+                 
+        yr=int(YR);mo=int(MO);da=float(DA);hr=float(HR);mn=float(MN);se=float(SE)
+        yr+=(mo-1)//12;mo=(mo-1)%12+1; # this extends mo values beyond the formal range 1-12    
+        t=datetime(yr,mo,1)+timedelta(da-1,hr*60*60+mn*60+se)    
+        return t
+    elif type(TIMESTAMP) == int:
+        yr=TIMESTAMP
+        t=datetime(yr,1,1)
+        return t
+    elif type(TIMESTAMP) == float:
+        yr=int(TIMESTAMP//1);da=(TIMESTAMP%1)*365.25 # Julian year length
+        t=datetime(yr,1,1)+timedelta(da,0)
+        return t
+    else:
+        print 'sh_datetime error: unknown type of TIMESTAMP'
+        return
